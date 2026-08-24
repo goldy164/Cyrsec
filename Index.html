@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>شات الشفرات السري 🔐</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; text-align: center; padding: 50px; }
+        .chat-box, .login-box { width: 420px; margin: auto; background: #1e293b; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        textarea { width: 90%; height: 90px; padding: 12px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 15px; background: #0f172a; color: #fff; font-size: 16px; resize: none; }
+        input[type="password"] { width: 90%; padding: 10px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 15px; background: #0f172a; color: #fff; text-align: center; font-size: 16px; }
+        button { background: #3b82f6; color: #fff; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; }
+        button:hover { background: #2563eb; }
+        .cipher-box { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #334155; color: #38bdf8; font-size: 18px; word-break: break-all; min-height: 25px; }
+        .label { text-align: right; display: block; margin-bottom: 5px; font-size: 14px; color: #94a3b8; }
+        .hidden { display: none; }
+        .error { color: #ef4444; margin-top: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <!-- صندوق تسجيل الدخول للموقع -->
+    <div class="login-box" id="loginBox">
+        <h2>🔒 دخول سري</h2>
+        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 15px;">اكتب كلمة السر عشان تفتح الشات</p>
+        <input type="password" id="passInput" placeholder="كلمة السر...">
+        <br>
+        <button onclick="checkPassword()">دخول</button>
+        <div class="error" id="errorMsg"></div>
+    </div>
+
+    <!-- صندوق الشات الأساسي -->
+    <div class="chat-box hidden" id="chatBox">
+        <h2>نظام المراسلة المشفر 🕵️‍♂️</h2>
+        
+        <span class="label">اكتب رسالتك:</span>
+        <textarea id="messageInput" placeholder="اكتب هنا..." oninput="updateCipher()"></textarea>
+        
+        <span class="label">الشكل بعد التشفير:</span>
+        <div class="cipher-box" id="cipherDisplay">لسه مفيش نص...</div>
+        
+        <button onclick="sendToTelegram()">إرسال للبوت</button>
+    </div>
+
+    <script>
+        // كلمة السر الخاصة بفتح الموقع (تقدر تغيرها)
+        const MY_PASSWORD = "123";
+
+        function checkPassword() {
+            let enteredPass = document.getElementById("passInput").value;
+            if (enteredPass === MY_PASSWORD) {
+                document.getElementById("loginBox").classList.add("hidden");
+                document.getElementById("chatBox").classList.remove("hidden");
+            } else {
+                document.getElementById("errorMsg").innerText = "كلمة السر غلط يا معلم!";
+            }
+        }
+
+        // بيانات البوت والـ Chat ID الخاص بك
+        const BOT_TOKEN = "حط_التوكن_هنا";
+        const CHAT_ID = "7468044993";
+
+        // جدول الشفرات (تقدر تعدل الحروف والرموز زي ما تحب)
+        const cipherMap = {
+            'a': '1$', 'A': '1$',
+            'b': '9#', 'B': '9#',
+            'c': '7*', 'C': '7*'
+        };
+
+        function encryptText(text) {
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                result += cipherMap[char] || char; // لو الحرف مش في الجدول بينزل زي ما هو
+            }
+            return result;
+        }
+
+        function updateCipher() {
+            let text = document.getElementById("messageInput").value;
+            if(!text) {
+                document.getElementById("cipherDisplay").innerText = "لسه مفيش نص...";
+                return;
+            }
+            document.getElementById("cipherDisplay").innerText = encryptText(text);
+        }
+
+        async function sendToTelegram() {
+            let originalText = document.getElementById("messageInput").value;
+            if (!originalText.trim()) return alert("اكتب رسالة الأول!");
+
+            let cipheredText = encryptText(originalText);
+            let fullMessage = `📩 رسالة مشفرة جديدة:\n\nالنص الأصلي: ${originalText}\nالشفرة: ${cipheredText}`;
+
+            let url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(fullMessage)}`;
+
+            try {
+                let response = await fetch(url);
+                if (response.ok) {
+                    document.getElementById("messageInput").value = "";
+                    document.getElementById("cipherDisplay").innerText = "لسه مفيش نص...";
+                    alert("تم الإرسال لبوت تليجرام بنجاح! 🚀");
+                } else {
+                    alert("فشل الإرسال، تأكد من صحة التوكن.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("مشكلة في الاتصال بالإنترنت.");
+            }
+        }
+    </script>
+
+</body>
+</html>
